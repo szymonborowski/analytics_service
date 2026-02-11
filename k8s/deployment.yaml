@@ -1,0 +1,121 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analytics-app
+  namespace: portfolio
+  labels:
+    app.kubernetes.io/name: analytics
+    app.kubernetes.io/component: app
+    app.kubernetes.io/part-of: portfolio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: analytics
+      app.kubernetes.io/component: app
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: analytics
+        app.kubernetes.io/component: app
+    spec:
+      terminationGracePeriodSeconds: 30
+      initContainers:
+        - name: copy-public
+          image: ghcr.io/szymonborowski/microservices-analytics:v0.0.1
+          command: ["sh", "-c", "cp -r /var/www/html/public/. /shared/public/"]
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - name: public-files
+              mountPath: /shared/public
+        - name: migrate-and-seed
+          image: ghcr.io/szymonborowski/microservices-analytics:v0.0.1
+          command:
+            - sh
+            - -c
+            - |
+              echo "Running migrations..."
+              php artisan migrate --force
+              echo "Database initialization complete!"
+          envFrom:
+            - configMapRef:
+                name: analytics-config
+            - secretRef:
+                name: analytics-secret
+          resources:
+            limits:
+              cpu: 200m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+      containers:
+        - name: php-fpm
+          image: ghcr.io/szymonborowski/microservices-analytics:v0.0.1
+          ports:
+            - containerPort: 9000
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: analytics-config
+            - secretRef:
+                name: analytics-secret
+          livenessProbe:
+            tcpSocket:
+              port: 9000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: 9000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 5"]
+          volumeMounts:
+            - name: public-files
+              mountPath: /var/www/html/public
+              readOnly: true
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d
+              readOnly: true
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+      volumes:
+        - name: public-files
+          emptyDir: {}
+        - name: nginx-config
+          configMap:
+            name: analytics-nginx-config
