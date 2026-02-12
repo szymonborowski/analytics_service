@@ -19,7 +19,7 @@ Frontend ──▶ RabbitMQ (post.viewed) ──▶ Analytics Consumer ──▶
 
 ## Tech Stack
 
-- **Backend:** PHP 8.2 / Laravel 12
+- **Backend:** PHP 8.5 / Laravel 12
 - **Database:** MySQL 8
 - **Message queue:** RabbitMQ (php-amqplib)
 - **API docs:** OpenAPI 3.0 (L5-Swagger)
