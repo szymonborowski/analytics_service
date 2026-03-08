@@ -23,6 +23,7 @@ spec:
       containers:
         - name: consumer
           image: ghcr.io/szymonborowski/microservices-analytics:v0.0.1
+          imagePullPolicy: Never
           args: ["php", "artisan", "rabbitmq:consume-views"]
           envFrom:
             - configMapRef:

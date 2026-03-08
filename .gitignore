@@ -2,3 +2,6 @@
 src/vendor/
 src/node_modules/
 src/.env
+
+# Kubernetes secrets (use secret.example.yaml as template)
+k8s/secret.yaml
