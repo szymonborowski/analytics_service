@@ -23,16 +23,16 @@ spec:
       initContainers:
         - name: copy-public
           image: ghcr.io/szymonborowski/portfolio-analytics:v0.0.2
-          imagePullPolicy: Never
+          imagePullPolicy: IfNotPresent
           command: ["sh", "-c", "cp -r /var/www/html/public/. /shared/public/"]
           securityContext:
             runAsUser: 0
           volumeMounts:
             - name: public-files
               mountPath: /shared/public
-        - name: migrate-and-seed
+        - name: migrate
           image: ghcr.io/szymonborowski/portfolio-analytics:v0.0.2
-          imagePullPolicy: Never
+          imagePullPolicy: IfNotPresent
           command:
             - sh
             - -c
@@ -56,7 +56,7 @@ spec:
       containers:
         - name: php-fpm
           image: ghcr.io/szymonborowski/portfolio-analytics:v0.0.2
-          imagePullPolicy: Never
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 9000
               protocol: TCP
