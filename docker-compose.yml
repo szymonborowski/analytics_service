@@ -37,6 +37,11 @@ services:
       - analytics-internal
       - microservices
     logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          cpus: '0.50'
 
   analytics-nginx:
     image: nginx:1.27
@@ -56,6 +61,11 @@ services:
       - analytics-internal
       - microservices
     logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          memory: 64m
+          cpus: '0.25'
 
   analytics-consumer:
     build:
@@ -87,6 +97,11 @@ services:
       - analytics-internal
       - microservices
     logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+          cpus: '0.25'
 
   analytics-db:
     image: mysql:8
@@ -108,6 +123,11 @@ services:
     networks:
       - analytics-internal
     logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          cpus: '0.50'
 
 networks:
   analytics-internal:
