@@ -20,6 +20,8 @@ spec:
         app.kubernetes.io/component: consumer
     spec:
       terminationGracePeriodSeconds: 30
+      imagePullSecrets:
+        - name: ghcr-secret
       containers:
         - name: consumer
           image: ghcr.io/szymonborowski/microservices-analytics:v0.0.1
@@ -32,8 +34,7 @@ spec:
                 name: analytics-secret
           resources:
             requests:
-              cpu: 100m
+              cpu: 10m
               memory: 128Mi
             limits:
-              cpu: 300m
               memory: 256Mi
