@@ -28,6 +28,7 @@ services:
       INTERNAL_API_KEY: ${INTERNAL_API_KEY}
     volumes:
       - ./src:/var/www/html
+      - analytics_vendor:/var/www/html/vendor
     depends_on:
       analytics-db:
         condition: service_healthy
@@ -89,6 +90,7 @@ services:
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
     volumes:
       - ./src:/var/www/html
+      - analytics_vendor:/var/www/html/vendor
     depends_on:
       analytics-db:
         condition: service_healthy
@@ -137,3 +139,4 @@ networks:
 
 volumes:
   analytics_db_data:
+  analytics_vendor:
