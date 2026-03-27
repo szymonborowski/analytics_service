@@ -16,10 +16,12 @@ class AggregateDailyStats extends Command
     public function handle(): int
     {
         $date = $this->option('date')
-            ? \Carbon\Carbon::parse($this->option('date'))->toDateString()
-            : now()->subDay()->toDateString();
+            ? \Carbon\Carbon::parse($this->option('date'))
+            : now()->subDay();
 
-        $this->info("Aggregating stats for: {$date}");
+        $dateString = $date->toDateString();
+
+        $this->info("Aggregating stats for: {$dateString}");
 
         $stats = DB::table('post_views')
             ->select(
@@ -27,7 +29,7 @@ class AggregateDailyStats extends Command
                 DB::raw('COUNT(*) as total_views'),
                 DB::raw('COUNT(DISTINCT COALESCE(CAST(user_id AS CHAR), ip_address)) as unique_viewers')
             )
-            ->whereDate('viewed_at', $date)
+            ->whereDate('viewed_at', $dateString)
             ->groupBy('post_uuid')
             ->get();
 
@@ -36,7 +38,7 @@ class AggregateDailyStats extends Command
             PostDailyStat::updateOrCreate(
                 [
                     'post_uuid' => $stat->post_uuid,
-                    'date' => $date,
+                    'date' => $date->startOfDay(),
                 ],
                 [
                     'total_views' => $stat->total_views,
